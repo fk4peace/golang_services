@@ -14,27 +14,33 @@ type Response struct {
 }
 
 func responseErrorFrom(writer http.ResponseWriter, err error) {
-	var ErrNotFound service.ErrNotFound
-	if errors.As(err, &ErrNotFound) {
-		responseError(writer, "person not found", 404)
-		return
-	}
-
-	var ErrPasswordTooShort service.ErrPasswordTooShort
-	if errors.As(err, &ErrPasswordTooShort) {
+	var errPasswordTooShort service.ErrPasswordTooShort
+	if errors.As(err, &errPasswordTooShort) {
 		responseError(writer, err.Error(), 422)
 		return
 	}
 
-	var ErrInvalidCredentials service.ErrInvalidCredentials
-	if errors.As(err, &ErrInvalidCredentials) {
-		responseError(writer, err.Error(), 401)
+	var errInvalidCredentials service.ErrInvalidCredentials
+	if errors.As(err, &errInvalidCredentials) {
+		responseError(writer, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	var errInvalidRefreshToken service.ErrInvalidRefreshToken
+	if errors.As(err, &errInvalidRefreshToken) {
+		responseError(writer, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	var errAlreadyExists service.ErrUsernameAlreadyTaken
+	if errors.As(err, &errAlreadyExists) {
+		responseError(writer, err.Error(), http.StatusConflict)
 		return
 	}
 
 	var ErrInternal service.ErrInternal
 	if errors.As(err, &ErrInternal) {
-		responseError(writer, "something went wrong, sorry :,(", 500)
+		responseError(writer, err.Error(), 500)
 		return
 	}
 

@@ -1,48 +1,39 @@
 package service
 
-import (
-	"auth_service/internal/storage"
-	"errors"
-)
-
 type ErrPasswordTooShort struct{}
 
 func (e ErrPasswordTooShort) Error() string {
 	return "password must be at least 10 characters"
 }
 
-type ErrInvalidCredentials struct{}
+type ErrInvalidCredentials struct {
+	source error
+}
 
 func (e ErrInvalidCredentials) Error() string {
 	return "invalid username or password"
 }
 
-type ErrNotFound struct {
-	error
+type ErrInvalidRefreshToken struct {
+	source error
 }
 
-type ErrAlreadyExists struct {
-	error
+func (e ErrInvalidRefreshToken) Error() string {
+	return "refresh token is invalid"
+}
+
+type ErrUsernameAlreadyTaken struct {
+	source error
+}
+
+func (e ErrUsernameAlreadyTaken) Error() string {
+	return "this username is already taken"
 }
 
 type ErrInternal struct {
-	error
+	source error
 }
 
-func ErrorFrom(err error) error {
-	if err == nil {
-		return nil
-	}
-
-	var errNotFound storage.ErrNotFound
-	if errors.As(err, &errNotFound) {
-		return ErrNotFound{err}
-	}
-
-	var errAlreadyExists storage.ErrAlreadyExists
-	if errors.As(err, &errAlreadyExists) {
-		return ErrAlreadyExists{err}
-	}
-
-	return ErrInternal{err}
+func (e ErrInternal) Error() string {
+	return "something went wrong, sorry :,("
 }

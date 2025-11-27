@@ -11,6 +11,7 @@ type iservice interface {
 	CreatePerson(username, password string) (*entity.Person, error)
 	GenerateTokens(id int64) (*string, *string, error)
 	SignIn(username, password string) (*entity.Person, error)
+	Refresh(refreshToken string) (*string, *string, error)
 }
 
 type httpController struct {
@@ -26,6 +27,7 @@ func New(service iservice) http.Handler {
 
 	router.Post("/sign_up", controller.signUp)
 	router.Post("/sign_in", controller.signIn)
+	router.Post("/refresh", controller.refresh)
 
 	return router
 }

@@ -2,9 +2,7 @@ package httpController
 
 import (
 	"auth_service/internal/entity"
-	"auth_service/internal/service"
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
@@ -35,12 +33,6 @@ func (c *httpController) signUp(w http.ResponseWriter, r *http.Request) {
 	person, err := c.service.CreatePerson(payload.Username, payload.Password)
 
 	if err != nil {
-		var errAlreadyExists service.ErrAlreadyExists
-		if errors.As(err, &errAlreadyExists) {
-			responseError(w, "person with this username already exists", http.StatusConflict)
-			return
-		}
-
 		responseErrorFrom(w, err)
 		return
 	}

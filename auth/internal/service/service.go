@@ -45,7 +45,12 @@ func (s *Service) CreatePerson(username, password string) (*entity.Person, error
 	person, err := s.store.CreatePerson(username, s.passwordHash(password))
 
 	if err != nil {
-		return nil, ErrorFrom(err)
+		var errAlreadyExists storage.ErrAlreadyExists
+		if errors.As(err, &errAlreadyExists) {
+			return nil, ErrUsernameAlreadyTaken{err}
+		}
+
+		return nil, ErrInternal{err}
 	}
 
 	return person, err
@@ -80,20 +85,58 @@ func (s *Service) GenerateTokens(personId int64) (*string, *string, error) {
 	return &signedAccess, &signedRefresh, nil
 }
 
+func (s *Service) Refresh(refreshToken string) (*string, *string, error) {
+	token, err := jwt.Parse(refreshToken, func(t *jwt.Token) (any, error) {
+		if t.Method != jwt.SigningMethodHS256 {
+			return nil, ErrInvalidRefreshToken{errors.New("incorrect signing method")}
+		}
+		return []byte(s.config.JwtRefreshSecret), nil
+	})
+	if err != nil {
+		return nil, nil, ErrInvalidRefreshToken{err}
+	}
+
+	if !token.Valid {
+		return nil, nil, ErrInvalidRefreshToken{errors.New("token is not valid")}
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, nil, ErrInvalidRefreshToken{err}
+	}
+
+	sub, ok := claims["sub"].(string)
+	if !ok {
+		return nil, nil, ErrInvalidRefreshToken{err}
+	}
+
+	userID, err := strconv.ParseInt(sub, 10, 64)
+	if err != nil {
+		return nil, nil, ErrInvalidRefreshToken{err}
+	}
+
+	newAccessToken, newRefreshToken, err := s.GenerateTokens(userID)
+	if err != nil {
+		return nil, nil, ErrInternal{err}
+	}
+
+	return newAccessToken, newRefreshToken, nil
+}
+
 func (s *Service) SignIn(username, password string) (*entity.Person, error) {
 	person, err := s.store.GetPersonByUsername(username)
 	if err != nil {
 		var ErrNotFound storage.ErrNotFound
 
 		if errors.As(err, &ErrNotFound) {
-			return nil, ErrInvalidCredentials{}
+			return nil, ErrInvalidCredentials{err}
 		}
 
-		return nil, ErrorFrom(err)
+		return nil, ErrInternal{err}
 	}
 
 	if *person.Password != s.passwordHash(password) {
-		return nil, ErrInvalidCredentials{}
+		return nil, ErrInvalidCredentials{errors.New("password is incorrect")}
 	}
 
 	person.Password = nil
