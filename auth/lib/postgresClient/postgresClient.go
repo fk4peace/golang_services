@@ -1,0 +1,27 @@
+package postgresClient
+
+import (
+	"auth_service/internal/config"
+	"context"
+	"fmt"
+
+	"github.com/jackc/pgx/v5"
+)
+
+func New(cfg config.Postgres) *pgx.Conn {
+	url := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
+
+	ctx := context.Background()
+
+	conn, err := pgx.Connect(ctx, url)
+	if err != nil {
+		panic((err))
+	}
+
+	err = conn.Ping(ctx)
+	if err != nil {
+		panic((err))
+	}
+
+	return conn
+}

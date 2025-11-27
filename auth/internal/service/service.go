@@ -1,0 +1,102 @@
+package service
+
+import (
+	"auth_service/internal/config"
+	"auth_service/internal/entity"
+	"auth_service/internal/storage"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"strconv"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+type istorage interface {
+	CreatePerson(username, password string) (*entity.Person, error)
+	GetPersonByUsername(username string) (*entity.Person, error)
+}
+
+type Service struct {
+	store  istorage
+	config config.Service
+}
+
+func New(cfg config.Service, storage istorage) *Service {
+	return &Service{
+		store:  storage,
+		config: cfg,
+	}
+}
+
+func (s *Service) passwordHash(password string) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(password + s.config.PasswordSalt))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func (s *Service) CreatePerson(username, password string) (*entity.Person, error) {
+
+	if len(password) < 10 {
+		return nil, ErrPasswordTooShort{}
+	}
+
+	person, err := s.store.CreatePerson(username, s.passwordHash(password))
+
+	if err != nil {
+		return nil, ErrorFrom(err)
+	}
+
+	return person, err
+}
+
+func (s *Service) GenerateTokens(personId int64) (*string, *string, error) {
+
+	accessClaims := jwt.RegisteredClaims{
+		Subject:   strconv.FormatInt(personId, 10),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
+	}
+
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	signedAccess, err := accessToken.SignedString([]byte(s.config.JwtAccessSecret))
+	if err != nil {
+		return nil, nil, ErrInternal{err}
+	}
+
+	refreshClaims := jwt.RegisteredClaims{
+		Subject:   strconv.FormatInt(personId, 10),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
+	}
+
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+	signedRefresh, err := refreshToken.SignedString([]byte(s.config.JwtRefreshSecret))
+	if err != nil {
+		return nil, nil, ErrInternal{err}
+	}
+
+	return &signedAccess, &signedRefresh, nil
+}
+
+func (s *Service) SignIn(username, password string) (*entity.Person, error) {
+	person, err := s.store.GetPersonByUsername(username)
+	if err != nil {
+		var ErrNotFound storage.ErrNotFound
+
+		if errors.As(err, &ErrNotFound) {
+			return nil, ErrInvalidCredentials{}
+		}
+
+		return nil, ErrorFrom(err)
+	}
+
+	if *person.Password != s.passwordHash(password) {
+		return nil, ErrInvalidCredentials{}
+	}
+
+	person.Password = nil
+
+	return person, err
+}
