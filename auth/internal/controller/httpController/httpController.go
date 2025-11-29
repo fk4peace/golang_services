@@ -10,7 +10,7 @@ import (
 
 type iservice interface {
 	CreatePerson(username, password string) (*entity.Person, error)
-	GenerateTokens(id int64) (*string, *string, error)
+	GenerateTokens(personId int64) (*string, *string, error)
 	SignIn(username, password string) (*entity.Person, error)
 	Refresh(refreshToken string) (*string, *string, error)
 }

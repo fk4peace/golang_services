@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/fk4peace/golang_services/auth/internal/config"
@@ -17,6 +16,7 @@ import (
 type istorage interface {
 	CreatePerson(username, password string) (*entity.Person, error)
 	GetPersonByUsername(username string) (*entity.Person, error)
+	GetPersonById(id int64) (*entity.Person, error)
 }
 
 type Service struct {
@@ -31,10 +31,24 @@ func New(cfg config.Service, storage istorage) *Service {
 	}
 }
 
-func (s *Service) passwordHash(password string) string {
+func (s *Service) generateHash(password string) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(password + s.config.PasswordSalt))
 	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+type claims struct {
+	PersonId *int64 `json:"person_id,omitempty"`
+	jwt.RegisteredClaims
+}
+
+func (s *Service) generateToken(claims claims, secret string) (*string, error) {
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
+	if err != nil {
+		return nil, err
+	}
+
+	return &token, nil
 }
 
 func (s *Service) CreatePerson(username, password string) (*entity.Person, error) {
@@ -43,7 +57,7 @@ func (s *Service) CreatePerson(username, password string) (*entity.Person, error
 		return nil, ErrPasswordTooShort{}
 	}
 
-	person, err := s.store.CreatePerson(username, s.passwordHash(password))
+	person, err := s.store.CreatePerson(username, s.generateHash(password))
 
 	if err != nil {
 		var errAlreadyExists storage.ErrAlreadyExists
@@ -58,32 +72,24 @@ func (s *Service) CreatePerson(username, password string) (*entity.Person, error
 }
 
 func (s *Service) GenerateTokens(personId int64) (*string, *string, error) {
+	data := claims{}
+	data.PersonId = &personId
+	data.IssuedAt = jwt.NewNumericDate(time.Now())
+	data.ExpiresAt = jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour))
 
-	accessClaims := jwt.RegisteredClaims{
-		Subject:   strconv.FormatInt(personId, 10),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
-	}
-
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
-	signedAccess, err := accessToken.SignedString([]byte(s.config.JwtAccessSecret))
+	refreshToken, err := s.generateToken(data, s.config.JwtRefreshSecret)
 	if err != nil {
 		return nil, nil, ErrInternal{err}
 	}
 
-	refreshClaims := jwt.RegisteredClaims{
-		Subject:   strconv.FormatInt(personId, 10),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
-	}
+	data.ExpiresAt = jwt.NewNumericDate(time.Now().Add(15 * time.Minute))
 
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
-	signedRefresh, err := refreshToken.SignedString([]byte(s.config.JwtRefreshSecret))
+	accessToken, err := s.generateToken(data, s.config.JwtAccessSecret)
 	if err != nil {
 		return nil, nil, ErrInternal{err}
 	}
 
-	return &signedAccess, &signedRefresh, nil
+	return accessToken, refreshToken, nil
 }
 
 func (s *Service) Refresh(refreshToken string) (*string, *string, error) {
@@ -106,19 +112,14 @@ func (s *Service) Refresh(refreshToken string) (*string, *string, error) {
 		return nil, nil, ErrInvalidRefreshToken{err}
 	}
 
-	sub, ok := claims["sub"].(string)
+	personId, ok := claims["person_id"].(int64)
 	if !ok {
 		return nil, nil, ErrInvalidRefreshToken{err}
 	}
 
-	userID, err := strconv.ParseInt(sub, 10, 64)
+	newAccessToken, newRefreshToken, err := s.GenerateTokens(personId)
 	if err != nil {
-		return nil, nil, ErrInvalidRefreshToken{err}
-	}
-
-	newAccessToken, newRefreshToken, err := s.GenerateTokens(userID)
-	if err != nil {
-		return nil, nil, ErrInternal{err}
+		return nil, nil, err
 	}
 
 	return newAccessToken, newRefreshToken, nil
@@ -128,7 +129,6 @@ func (s *Service) SignIn(username, password string) (*entity.Person, error) {
 	person, err := s.store.GetPersonByUsername(username)
 	if err != nil {
 		var ErrNotFound storage.ErrNotFound
-
 		if errors.As(err, &ErrNotFound) {
 			return nil, ErrInvalidCredentials{err}
 		}
@@ -136,7 +136,7 @@ func (s *Service) SignIn(username, password string) (*entity.Person, error) {
 		return nil, ErrInternal{err}
 	}
 
-	if *person.Password != s.passwordHash(password) {
+	if *person.Password != s.generateHash(password) {
 		return nil, ErrInvalidCredentials{errors.New("password is incorrect")}
 	}
 

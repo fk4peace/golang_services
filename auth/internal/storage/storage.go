@@ -54,3 +54,24 @@ func (s Storage) GetPersonByUsername(username string) (*entity.Person, error) {
 
 	return &person, nil
 }
+
+func (s Storage) GetPersonById(id int64) (*entity.Person, error) {
+	const query = `
+		SELECT id, username, password
+		FROM person
+		WHERE id = $1
+	`
+
+	var person entity.Person
+
+	err := s.client.QueryRow(context.Background(), query, id).Scan(
+		&person.Id,
+		&person.Username,
+		&person.Password,
+	)
+	if err != nil {
+		return nil, ErrorFrom(err)
+	}
+
+	return &person, nil
+}
