@@ -1,14 +1,15 @@
 package service
 
 import (
-	"auth_service/internal/config"
-	"auth_service/internal/entity"
-	"auth_service/internal/storage"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"strconv"
 	"time"
+
+	"github.com/fk4peace/golang_services/auth/internal/config"
+	"github.com/fk4peace/golang_services/auth/internal/entity"
+	"github.com/fk4peace/golang_services/auth/internal/storage"
 
 	"github.com/golang-jwt/jwt/v5"
 )

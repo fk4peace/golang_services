@@ -1,9 +1,10 @@
 package httpController
 
 import (
-	"auth_service/internal/entity"
 	"encoding/json"
 	"net/http"
+
+	"github.com/fk4peace/golang_services/auth/internal/entity"
 )
 
 type signUpRequest struct {

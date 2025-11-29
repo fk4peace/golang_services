@@ -1,9 +1,10 @@
 package postgresClient
 
 import (
-	"auth_service/internal/config"
 	"context"
 	"fmt"
+
+	"github.com/fk4peace/golang_services/auth/internal/config"
 
 	"github.com/jackc/pgx/v5"
 )

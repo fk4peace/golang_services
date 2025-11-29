@@ -1,8 +1,9 @@
 package httpController
 
 import (
-	"auth_service/internal/entity"
 	"net/http"
+
+	"github.com/fk4peace/golang_services/auth/internal/entity"
 
 	"github.com/go-chi/chi/v5"
 )

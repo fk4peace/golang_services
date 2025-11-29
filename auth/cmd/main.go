@@ -1,12 +1,12 @@
 package main
 
 import (
-	"auth_service/internal/config"
-	"auth_service/internal/controller/httpController"
-	"auth_service/internal/service"
-	"auth_service/internal/storage"
-	"auth_service/lib/httpServer"
-	"auth_service/lib/postgresClient"
+	"github.com/fk4peace/golang_services/auth/internal/config"
+	"github.com/fk4peace/golang_services/auth/internal/controller/httpController"
+	"github.com/fk4peace/golang_services/auth/internal/service"
+	"github.com/fk4peace/golang_services/auth/internal/storage"
+	"github.com/fk4peace/golang_services/auth/pkg/httpServer"
+	"github.com/fk4peace/golang_services/auth/pkg/postgresClient"
 )
 
 func main() {

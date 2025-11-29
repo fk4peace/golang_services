@@ -1,8 +1,9 @@
 package storage
 
 import (
-	"auth_service/internal/entity"
 	"context"
+
+	"github.com/fk4peace/golang_services/auth/internal/entity"
 
 	"github.com/jackc/pgx/v5"
 )

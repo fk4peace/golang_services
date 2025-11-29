@@ -1,4 +1,4 @@
-module auth_service
+module github.com/fk4peace/golang_services/auth
 
 go 1.25.4
 

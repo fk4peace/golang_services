@@ -1,11 +1,12 @@
 package httpController
 
 import (
-	"auth_service/internal/service"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/fk4peace/golang_services/auth/internal/service"
 )
 
 type Response struct {

@@ -1,9 +1,10 @@
 package httpServer
 
 import (
-	"auth_service/internal/config"
 	"net/http"
 	"strconv"
+
+	"github.com/fk4peace/golang_services/auth/internal/config"
 )
 
 type HttpServer struct {
