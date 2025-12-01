@@ -19,14 +19,12 @@ type Postgres struct {
 	Database string `env:"POSTGRES_DATABASE"`
 }
 
-type HttpServer struct {
-	Port int `env:"AUTH_SERVICE_HTTP_PORT"`
+type Service struct {
+	JwtSecret string `env:"JWT_ACCESS_SECRET"`
 }
 
-type Service struct {
-	PasswordSalt     string `env:"AUTH_SERVICE_PASSWORD_SALT"`
-	JwtAccessSecret  string `env:"JWT_ACCESS_SECRET"`
-	JwtRefreshSecret string `env:"JWT_REFRESH_SECRET"`
+type HttpServer struct {
+	Port int `env:"BLOG_SERVICE_HTTP_PORT"`
 }
 
 func MustLoad() *Config {
@@ -38,11 +36,11 @@ func MustLoad() *Config {
 		panic(err)
 	}
 
-	if err := env.Parse(&cfg.Postgres); err != nil {
+	if err := env.Parse(&cfg.Service); err != nil {
 		panic(err)
 	}
 
-	if err := env.Parse(&cfg.Service); err != nil {
+	if err := env.Parse(&cfg.Postgres); err != nil {
 		panic(err)
 	}
 

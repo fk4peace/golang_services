@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fk4peace/golang_services/auth/internal/service"
+	"github.com/fk4peace/golang_services/blog/internal/service"
 )
 
 type Response struct {
@@ -15,33 +15,15 @@ type Response struct {
 }
 
 func responseErrorFrom(writer http.ResponseWriter, err error) {
-	var errPasswordTooShort service.ErrPasswordTooShort
-	if errors.As(err, &errPasswordTooShort) {
-		responseError(writer, err.Error(), 422)
-		return
-	}
-
-	var errInvalidCredentials service.ErrInvalidCredentials
-	if errors.As(err, &errInvalidCredentials) {
-		responseError(writer, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	var errInvalidRefreshToken service.ErrInvalidRefreshToken
-	if errors.As(err, &errInvalidRefreshToken) {
-		responseError(writer, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	var errAlreadyExists service.ErrUsernameAlreadyTaken
-	if errors.As(err, &errAlreadyExists) {
-		responseError(writer, err.Error(), http.StatusConflict)
+	var ErrPostNotFound service.ErrPostNotFound
+	if errors.As(err, &ErrPostNotFound) {
+		responseError(writer, err.Error(), http.StatusNotFound)
 		return
 	}
 
 	var ErrInternal service.ErrInternal
 	if errors.As(err, &ErrInternal) {
-		responseError(writer, err.Error(), 500)
+		responseError(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
