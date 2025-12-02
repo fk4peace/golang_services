@@ -75,3 +75,20 @@ func (s Storage) GetPersonById(id int64) (*entity.Person, error) {
 
 	return &person, nil
 }
+
+func (s Storage) GetPersonRolesById(personId int64) ([]entity.Role, error) {
+	const query = `
+		SELECT role
+		FROM person
+		WHERE id = $1
+	`
+
+	var role entity.Role
+
+	err := s.client.QueryRow(context.Background(), query, personId).Scan(&role)
+	if err != nil {
+		return nil, ErrorFrom(err)
+	}
+
+	return []entity.Role{role}, nil
+}

@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type iservice interface {
+type iService interface {
 	CreatePerson(username, password string) (*entity.Person, error)
 	GenerateTokens(personId int64) (*string, *string, error)
 	SignIn(username, password string) (*entity.Person, error)
@@ -16,10 +16,10 @@ type iservice interface {
 }
 
 type httpController struct {
-	service iservice
+	service iService
 }
 
-func New(service iservice) http.Handler {
+func New(service iService) http.Handler {
 	controller := httpController{
 		service: service,
 	}

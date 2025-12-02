@@ -13,18 +13,19 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type istorage interface {
+type iStorage interface {
 	CreatePerson(username, password string) (*entity.Person, error)
 	GetPersonByUsername(username string) (*entity.Person, error)
-	GetPersonById(id int64) (*entity.Person, error)
+	GetPersonById(personId int64) (*entity.Person, error)
+	GetPersonRolesById(personId int64) ([]entity.Role, error)
 }
 
 type Service struct {
-	store  istorage
+	store  iStorage
 	config config.Service
 }
 
-func New(cfg config.Service, storage istorage) *Service {
+func New(cfg config.Service, storage iStorage) *Service {
 	return &Service{
 		store:  storage,
 		config: cfg,
@@ -49,6 +50,21 @@ func (s *Service) generateToken(claims claims, secret string) (*string, error) {
 	}
 
 	return &token, nil
+}
+
+func (s *Service) GetPersonRolesById(personId int64) ([]entity.Role, error) {
+	roles, err := s.store.GetPersonRolesById(personId)
+
+	if err != nil {
+		var errNotFound storage.ErrNotFound
+		if errors.As(err, &errNotFound) {
+			return nil, ErrPersonNotFound{err}
+		}
+
+		return nil, ErrInternal{err}
+	}
+
+	return roles, nil
 }
 
 func (s *Service) CreatePerson(username, password string) (*entity.Person, error) {

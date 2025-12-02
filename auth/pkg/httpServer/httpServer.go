@@ -1,6 +1,7 @@
 package httpServer
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -20,6 +21,8 @@ func New(cfg config.HttpServer, handler http.Handler) *HttpServer {
 }
 
 func (server *HttpServer) Start() {
+	log.Println("HttpServer running on :" + strconv.Itoa(server.port))
+
 	err := http.ListenAndServe(":"+strconv.Itoa(server.port), *server.handler)
 
 	if err != nil {

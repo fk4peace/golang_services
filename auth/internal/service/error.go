@@ -6,6 +6,14 @@ func (e ErrPasswordTooShort) Error() string {
 	return "password must be at least 10 characters"
 }
 
+type ErrPersonNotFound struct {
+	source error
+}
+
+func (e ErrPersonNotFound) Error() string {
+	return "person with this id does not exist"
+}
+
 type ErrInvalidCredentials struct {
 	source error
 }

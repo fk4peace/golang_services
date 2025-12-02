@@ -12,18 +12,18 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type iservice interface {
+type iService interface {
 	GetPosts(limit, page int64) ([]entity.Post, *int64, error)
 	GetPostById(postId int64) (*entity.Post, error)
 	CreatePost(personId int64, content string) (*entity.Post, error)
 }
 
 type httpController struct {
-	service   iservice
+	service   iService
 	jwtSecret string
 }
 
-func New(service iservice, jwtSecret string) http.Handler {
+func New(service iService, jwtSecret string) http.Handler {
 	controller := httpController{
 		service,
 		jwtSecret,
