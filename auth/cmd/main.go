@@ -8,17 +8,20 @@ import (
 	"github.com/fk4peace/golang_services/auth/internal/storage"
 	"github.com/fk4peace/golang_services/auth/pkg/grpcServer"
 	"github.com/fk4peace/golang_services/auth/pkg/httpServer"
+	"github.com/fk4peace/golang_services/auth/pkg/logger"
 	"github.com/fk4peace/golang_services/auth/pkg/postgresClient"
 )
 
 func main() {
 	cfg := config.MustLoad()
 
+	logger := logger.New()
+
 	dbClient := postgresClient.New(cfg.Postgres)
 	storage := storage.New(dbClient)
 	service := service.New(cfg.Service, storage)
-	httpController := httpController.New(service)
-	grpcController := grpcController.New(service)
+	httpController := httpController.New(service, logger)
+	grpcController := grpcController.New(service, logger)
 
 	httpServer := httpServer.New(cfg.HttpServer, httpController)
 	grpcServer := grpcServer.New(cfg.GrpcServer, grpcController)

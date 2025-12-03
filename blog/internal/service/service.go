@@ -2,9 +2,10 @@ package service
 
 import (
 	"errors"
+	"slices"
 
 	"github.com/fk4peace/golang_services/blog/internal/entity"
-	postStorage "github.com/fk4peace/golang_services/blog/internal/storage/post"
+	"github.com/fk4peace/golang_services/blog/internal/storage"
 )
 
 type iPostsStorage interface {
@@ -47,9 +48,9 @@ func (s *Service) GetPosts(limit, page int64) ([]entity.Post, *int64, error) {
 func (s *Service) GetPostById(postId int64) (*entity.Post, error) {
 	post, err := s.postStore.GetPostById(postId)
 	if err != nil {
-		var ErrNotFound postStorage.ErrNotFound
-		if errors.As(err, &ErrNotFound) {
-			return nil, ErrPostNotFound{err}
+		var errNotFound storage.ErrNotFound
+		if errors.As(err, &errNotFound) {
+			return nil, ErrNotFound{err}
 		}
 
 		return nil, ErrInternal{err}
@@ -59,6 +60,21 @@ func (s *Service) GetPostById(postId int64) (*entity.Post, error) {
 }
 
 func (s *Service) CreatePost(personId int64, content string) (*entity.Post, error) {
+	roles, err := s.authStore.GetPersonRolesById(personId)
+
+	if err != nil {
+		var errNotFound storage.ErrNotFound
+		if errors.As(err, &errNotFound) {
+			return nil, ErrNotFound{err}
+		}
+
+		return nil, ErrInternal{err}
+	}
+
+	if !slices.Contains(roles, "root") {
+		return nil, ErrNoPermissionToPost{errors.New("person must have root role")}
+	}
+
 	post, err := s.postStore.CreatePost(personId, content)
 	if err != nil {
 		return nil, ErrInternal{err}

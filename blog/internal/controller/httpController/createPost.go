@@ -30,7 +30,7 @@ func (c *httpController) createPost(w http.ResponseWriter, r *http.Request) {
 
 	post, err := c.service.CreatePost(*personId, payload.Content)
 	if err != nil {
-		responseErrorFrom(w, err)
+		c.responseErrorFrom(w, err)
 		return
 	}
 

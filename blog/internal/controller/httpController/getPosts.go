@@ -27,7 +27,7 @@ func (c *httpController) getPosts(w http.ResponseWriter, r *http.Request) {
 
 	posts, total, err := c.service.GetPosts(limit, page)
 	if err != nil {
-		responseErrorFrom(w, err)
+		c.responseErrorFrom(w, err)
 		return
 	}
 

@@ -17,7 +17,7 @@ func (c *httpController) getPostById(w http.ResponseWriter, r *http.Request) {
 
 	post, err := c.service.GetPostById(id)
 	if err != nil {
-		responseErrorFrom(w, err)
+		c.responseErrorFrom(w, err)
 		return
 	}
 

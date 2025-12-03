@@ -3,21 +3,10 @@ package post
 import (
 	"errors"
 
+	"github.com/fk4peace/golang_services/blog/internal/storage"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
-
-type ErrNotFound struct {
-	error
-}
-
-type ErrAlreadyExists struct {
-	error
-}
-
-type ErrInternal struct {
-	error
-}
 
 func ErrorFrom(err error) error {
 	if err == nil {
@@ -25,13 +14,13 @@ func ErrorFrom(err error) error {
 	}
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		return ErrNotFound{err}
+		return storage.ErrNotFound{Source: err}
 	}
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-		return ErrAlreadyExists{err}
+		return storage.ErrAlreadyExists{Source: err}
 	}
 
-	return ErrInternal{err}
+	return storage.ErrInternal{Source: err}
 }

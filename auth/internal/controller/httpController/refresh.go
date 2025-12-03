@@ -30,7 +30,7 @@ func (c *httpController) refresh(w http.ResponseWriter, r *http.Request) {
 	accessToken, refreshToken, err := c.service.Refresh(payload.RefreshToken)
 
 	if err != nil {
-		responseErrorFrom(w, err)
+		responseErrorFrom(w, r, err)
 		return
 	}
 

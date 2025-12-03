@@ -98,7 +98,7 @@ func (s *Service) GenerateTokens(personId int64) (*string, *string, error) {
 		return nil, nil, ErrInternal{err}
 	}
 
-	data.ExpiresAt = jwt.NewNumericDate(time.Now().Add(15 * time.Minute))
+	data.ExpiresAt = jwt.NewNumericDate(time.Now().Add(2 * time.Hour))
 
 	accessToken, err := s.generateToken(data, s.config.JwtAccessSecret)
 	if err != nil {
@@ -125,15 +125,20 @@ func (s *Service) Refresh(refreshToken string) (*string, *string, error) {
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, nil, ErrInvalidRefreshToken{err}
+		return nil, nil, ErrInvalidRefreshToken{errors.New("invalid refresh token structure")}
 	}
 
-	personId, ok := claims["person_id"].(int64)
+	personIdValue, ok := claims["person_id"]
 	if !ok {
-		return nil, nil, ErrInvalidRefreshToken{err}
+		return nil, nil, ErrInvalidRefreshToken{errors.New("token does not contain person_id")}
 	}
 
-	newAccessToken, newRefreshToken, err := s.GenerateTokens(personId)
+	personId, ok := personIdValue.(float64)
+	if !ok {
+		return nil, nil, ErrInvalidRefreshToken{errors.New("invalid person_id type")}
+	}
+
+	newAccessToken, newRefreshToken, err := s.GenerateTokens(int64(personId))
 	if err != nil {
 		return nil, nil, err
 	}

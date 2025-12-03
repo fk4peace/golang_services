@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/fk4peace/golang_services/blog/internal/service"
+	"go.uber.org/zap"
 )
 
 type Response struct {
@@ -14,19 +15,22 @@ type Response struct {
 	Data  interface{} `json:"data,omitempty"`
 }
 
-func responseErrorFrom(writer http.ResponseWriter, err error) {
-	var ErrPostNotFound service.ErrPostNotFound
-	if errors.As(err, &ErrPostNotFound) {
-		responseError(writer, err.Error(), http.StatusNotFound)
+func (c *httpController) responseErrorFrom(writer http.ResponseWriter, err error) {
+	c.log.Error("httpController", zap.Error(err))
+
+	var ErrNotFound service.ErrNotFound
+	if errors.As(err, &ErrNotFound) {
+		responseError(writer, ErrNotFound.Display(), http.StatusNotFound)
 		return
 	}
 
-	var ErrInternal service.ErrInternal
-	if errors.As(err, &ErrInternal) {
-		responseError(writer, err.Error(), http.StatusInternalServerError)
+	var errNoPermissionToPost service.ErrNoPermissionToPost
+	if errors.As(err, &errNoPermissionToPost) {
+		responseError(writer, errNoPermissionToPost.Display(), http.StatusForbidden)
 		return
 	}
 
+	responseError(writer, "something went wrong, sorry :,(", http.StatusInternalServerError)
 }
 
 func responseErrorInvalidJson(writer http.ResponseWriter) {

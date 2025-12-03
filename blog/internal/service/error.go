@@ -1,25 +1,25 @@
 package service
 
 type ErrInternal struct {
-	source error
+	error
 }
 
-func (e ErrInternal) Error() string {
+func (e ErrInternal) Display() string {
 	return "something went wrong, sorry :,("
 }
 
-type ErrPostNotFound struct {
-	source error
+type ErrNotFound struct {
+	error
 }
 
-func (e ErrPostNotFound) Error() string {
+func (e ErrNotFound) Display() string {
 	return "no posts found with this id"
 }
 
 type ErrNoPermissionToPost struct {
-	source error
+	error
 }
 
-func (e ErrNoPermissionToPost) Error() string {
+func (e ErrNoPermissionToPost) Display() string {
 	return "not enough permissions to create post"
 }

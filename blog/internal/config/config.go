@@ -8,6 +8,7 @@ import (
 type Config struct {
 	HttpServer
 	Postgres
+	AuthService
 	Service
 }
 
@@ -17,6 +18,11 @@ type Postgres struct {
 	Host     string `env:"POSTGRES_HOST"`
 	Port     int    `env:"POSTGRES_PORT"`
 	Database string `env:"POSTGRES_DATABASE"`
+}
+
+type AuthService struct {
+	Port int    `env:"AUTH_SERVICE_GRPC_PORT"`
+	Host string `env:"AUTH_SERVICE_GRPC_HOST"`
 }
 
 type Service struct {
@@ -37,6 +43,10 @@ func MustLoad() *Config {
 	}
 
 	if err := env.Parse(&cfg.Service); err != nil {
+		panic(err)
+	}
+
+	if err := env.Parse(&cfg.AuthService); err != nil {
 		panic(err)
 	}
 

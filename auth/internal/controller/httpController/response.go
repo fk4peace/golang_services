@@ -14,36 +14,40 @@ type Response struct {
 	Data  interface{} `json:"data,omitempty"`
 }
 
-func responseErrorFrom(writer http.ResponseWriter, err error) {
+func responseErrorFrom(writer http.ResponseWriter, r *http.Request, err error) {
+	writeError(r, err)
+
 	var errPasswordTooShort service.ErrPasswordTooShort
 	if errors.As(err, &errPasswordTooShort) {
-		responseError(writer, err.Error(), 422)
+		responseError(writer, errPasswordTooShort.Display(), 422)
 		return
 	}
 
 	var errInvalidCredentials service.ErrInvalidCredentials
 	if errors.As(err, &errInvalidCredentials) {
-		responseError(writer, err.Error(), http.StatusUnauthorized)
+		responseError(writer, errInvalidCredentials.Display(), http.StatusUnauthorized)
 		return
 	}
 
 	var errInvalidRefreshToken service.ErrInvalidRefreshToken
 	if errors.As(err, &errInvalidRefreshToken) {
-		responseError(writer, err.Error(), http.StatusUnauthorized)
+		responseError(writer, errInvalidRefreshToken.Display(), http.StatusUnauthorized)
 		return
 	}
 
 	var errAlreadyExists service.ErrUsernameAlreadyTaken
 	if errors.As(err, &errAlreadyExists) {
-		responseError(writer, err.Error(), http.StatusConflict)
+		responseError(writer, errAlreadyExists.Display(), http.StatusConflict)
 		return
 	}
 
 	var ErrInternal service.ErrInternal
 	if errors.As(err, &ErrInternal) {
-		responseError(writer, err.Error(), 500)
+		responseError(writer, ErrInternal.Display(), 500)
 		return
 	}
+
+	responseError(writer, "something went wrong, sorry :,(", http.StatusInternalServerError)
 
 }
 
