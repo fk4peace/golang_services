@@ -111,7 +111,7 @@ func (s *Service) GenerateTokens(personId int64) (*string, *string, error) {
 func (s *Service) Refresh(refreshToken string) (*string, *string, error) {
 	token, err := jwt.Parse(refreshToken, func(t *jwt.Token) (any, error) {
 		if t.Method != jwt.SigningMethodHS256 {
-			return nil, ErrInvalidRefreshToken{errors.New("incorrect signing method")}
+			return nil, errors.New("incorrect signing method")
 		}
 		return []byte(s.config.JwtRefreshSecret), nil
 	})
@@ -123,12 +123,9 @@ func (s *Service) Refresh(refreshToken string) (*string, *string, error) {
 		return nil, nil, ErrInvalidRefreshToken{errors.New("token is not valid")}
 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil, nil, ErrInvalidRefreshToken{errors.New("invalid refresh token structure")}
-	}
+	payload, _ := token.Claims.(jwt.MapClaims)
 
-	personIdValue, ok := claims["person_id"]
+	personIdValue, ok := payload["person_id"]
 	if !ok {
 		return nil, nil, ErrInvalidRefreshToken{errors.New("token does not contain person_id")}
 	}

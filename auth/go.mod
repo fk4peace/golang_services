@@ -12,6 +12,7 @@ require (
 )
 
 require (
+	github.com/agiledragon/gomonkey/v2 v2.11.0 // indirect
 	github.com/fk4peace/golang_services/shared/grpc_proto v0.0.0-20251202094512-5e884d39de67 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
