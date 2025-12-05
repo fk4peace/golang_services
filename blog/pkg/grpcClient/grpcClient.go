@@ -1,7 +1,7 @@
 package grpcClient
 
 import (
-	"strconv"
+	"fmt"
 
 	"github.com/fk4peace/golang_services/blog/internal/config"
 	proto "github.com/fk4peace/golang_services/shared/grpc_proto/gen"
@@ -11,7 +11,7 @@ import (
 
 func New(cfg config.AuthService) proto.AuthClient {
 	conn, err := grpc.NewClient(
-		cfg.Host+":"+strconv.Itoa(cfg.Port),
+		fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

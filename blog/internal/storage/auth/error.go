@@ -17,7 +17,6 @@ func ErrorFrom(err error) error {
 	}
 
 	switch st.Code() {
-
 	case codes.NotFound:
 		return &storage.ErrNotFound{Source: err}
 

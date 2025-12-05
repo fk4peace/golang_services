@@ -43,7 +43,7 @@ func responseErrorFrom(writer http.ResponseWriter, r *http.Request, err error) {
 
 	var ErrInternal service.ErrInternal
 	if errors.As(err, &ErrInternal) {
-		responseError(writer, ErrInternal.Display(), 500)
+		responseError(writer, ErrInternal.Display(), http.StatusInternalServerError)
 		return
 	}
 
