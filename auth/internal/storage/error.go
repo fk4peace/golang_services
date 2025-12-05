@@ -11,12 +11,24 @@ type ErrNotFound struct {
 	error
 }
 
+func NewErrNotFound(err error) ErrNotFound {
+	return ErrNotFound{err}
+}
+
 type ErrAlreadyExists struct {
 	error
 }
 
+func NewErrAlreadyExists(err error) ErrAlreadyExists {
+	return ErrAlreadyExists{err}
+}
+
 type ErrInternal struct {
 	error
+}
+
+func NewErrInternal(err error) ErrInternal {
+	return ErrInternal{err}
 }
 
 func ErrorFrom(err error) error {
