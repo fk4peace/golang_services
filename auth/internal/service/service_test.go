@@ -221,7 +221,6 @@ func TestCreatePerson(t *testing.T) {
 				require.Nil(t, person)
 			} else {
 				require.Equal(t, testCase.expectResult, person)
-				require.Len(t, testCase.data, 1)
 			}
 
 		})

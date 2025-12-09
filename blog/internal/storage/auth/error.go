@@ -13,35 +13,35 @@ func ErrorFrom(err error) error {
 
 	st, ok := status.FromError(err)
 	if !ok {
-		return &storage.ErrUnavailable{Source: err}
+		return storage.NewErrUnavailable(err)
 	}
 
 	switch st.Code() {
 	case codes.NotFound:
-		return &storage.ErrNotFound{Source: err}
+		return storage.NewErrNotFound(err)
 
 	case codes.InvalidArgument:
-		return &storage.ErrBadRequest{Source: err}
+		return storage.NewErrBadRequest(err)
 
 	case codes.AlreadyExists:
-		return &storage.ErrConflict{Source: err}
+		return storage.NewErrConflict(err)
 
 	case codes.Unauthenticated:
-		return &storage.ErrUnauthorized{Source: err}
+		return storage.NewErrUnauthorized(err)
 
 	case codes.PermissionDenied:
-		return &storage.ErrForbidden{Source: err}
+		return storage.NewErrForbidden(err)
 
 	case codes.Unavailable:
-		return &storage.ErrUnavailable{Source: err}
+		return storage.NewErrUnavailable(err)
 
 	case codes.DeadlineExceeded:
-		return &storage.ErrUnavailable{Source: err}
+		return storage.NewErrUnavailable(err)
 
 	case codes.Internal:
-		return &storage.ErrInternal{Source: err}
+		return storage.NewErrInternal(err)
 
 	default:
-		return &storage.ErrInternal{Source: err}
+		return storage.NewErrInternal(err)
 	}
 }

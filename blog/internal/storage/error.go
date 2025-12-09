@@ -1,65 +1,65 @@
 package storage
 
 type ErrNotFound struct {
-	Source error
+	error
 }
 
-func (e ErrNotFound) Error() string {
-	return e.Source.Error()
+func NewErrNotFound(err error) ErrNotFound {
+	return ErrNotFound{err}
 }
 
 type ErrAlreadyExists struct {
-	Source error
+	error
 }
 
-func (e ErrAlreadyExists) Error() string {
-	return e.Source.Error()
+func NewErrAlreadyExists(err error) ErrAlreadyExists {
+	return ErrAlreadyExists{err}
 }
 
 type ErrInternal struct {
-	Source error
+	error
 }
 
-func (e ErrInternal) Error() string {
-	return e.Source.Error()
+func NewErrInternal(err error) ErrInternal {
+	return ErrInternal{err}
 }
 
 type ErrUnauthorized struct {
-	Source error
+	error
 }
 
-func (e ErrUnauthorized) Error() string {
-	return e.Source.Error()
+func NewErrUnauthorized(err error) ErrUnauthorized {
+	return ErrUnauthorized{err}
 }
 
 type ErrForbidden struct {
-	Source error
+	error
 }
 
-func (e ErrForbidden) Error() string {
-	return e.Source.Error()
+func NewErrForbidden(err error) ErrForbidden {
+	return ErrForbidden{err}
 }
 
 type ErrUnavailable struct {
-	Source error
+	error
 }
 
-func (e ErrUnavailable) Error() string {
-	return e.Source.Error()
+func NewErrUnavailable(err error) ErrUnavailable {
+	return ErrUnavailable{err}
 }
 
 type ErrBadRequest struct {
-	Source error
+	error
 }
 
-func (e ErrBadRequest) Error() string {
-	return e.Source.Error()
+func NewErrBadRequest(err error) ErrBadRequest {
+	return ErrBadRequest{err}
 }
 
 type ErrConflict struct {
-	Source error
+	error
 }
 
-func (e ErrConflict) Error() string {
-	return e.Source.Error()
+func NewErrConflict(err error) ErrConflict {
+	return ErrConflict{err}
 }

@@ -18,11 +18,13 @@ type iService interface {
 
 type httpController struct {
 	service iService
+	log     *zap.Logger
 }
 
 func New(service iService, log *zap.Logger) http.Handler {
 	controller := httpController{
 		service: service,
+		log:     log,
 	}
 
 	router := chi.NewRouter()

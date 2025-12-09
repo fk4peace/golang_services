@@ -34,14 +34,14 @@ func (c *httpController) signUp(w http.ResponseWriter, r *http.Request) {
 	person, err := c.service.CreatePerson(payload.Username, payload.Password)
 
 	if err != nil {
-		responseErrorFrom(w, r, err)
+		c.responseErrorFrom(w, err)
 		return
 	}
 
 	accessToken, refreshToken, err := c.service.GenerateTokens(*person.Id)
 
 	if err != nil {
-		responseErrorFrom(w, r, err)
+		c.responseErrorFrom(w, err)
 		return
 	}
 

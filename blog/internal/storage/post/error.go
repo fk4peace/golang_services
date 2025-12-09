@@ -14,13 +14,13 @@ func ErrorFrom(err error) error {
 	}
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		return storage.ErrNotFound{Source: err}
+		return storage.NewErrNotFound(err)
 	}
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-		return storage.ErrAlreadyExists{Source: err}
+		return storage.NewErrAlreadyExists(err)
 	}
 
-	return storage.ErrInternal{Source: err}
+	return storage.NewErrInternal(err)
 }

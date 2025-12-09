@@ -8,6 +8,7 @@ import (
 	"github.com/fk4peace/golang_services/blog/internal/storage"
 )
 
+//go:generate go run go.uber.org/mock/mockgen@v0.6.0 -package=mock -destination=mock/PostsStorage.go -mock_names=iPostsStorage=PostsStorage . iPostsStorage
 type iPostsStorage interface {
 	GetPosts(limit, page int64) ([]entity.Post, error)
 	GetPostsTotal() (*int64, error)
@@ -15,6 +16,7 @@ type iPostsStorage interface {
 	CreatePost(personId int64, content string) (*entity.Post, error)
 }
 
+//go:generate go run go.uber.org/mock/mockgen@v0.6.0 -package=mock -destination=mock/AuthStorage.go -mock_names=iAuthStorage=AuthStorage . iAuthStorage
 type iAuthStorage interface {
 	GetPersonRolesById(personId int64) ([]string, error)
 }
@@ -50,7 +52,7 @@ func (s *Service) GetPostById(postId int64) (*entity.Post, error) {
 	if err != nil {
 		var errNotFound storage.ErrNotFound
 		if errors.As(err, &errNotFound) {
-			return nil, ErrNotFound{err}
+			return nil, ErrNotPostsFound{err}
 		}
 
 		return nil, ErrInternal{err}
@@ -65,7 +67,7 @@ func (s *Service) CreatePost(personId int64, content string) (*entity.Post, erro
 	if err != nil {
 		var errNotFound storage.ErrNotFound
 		if errors.As(err, &errNotFound) {
-			return nil, ErrNotFound{err}
+			return nil, ErrNoPersonFound{err}
 		}
 
 		return nil, ErrInternal{err}

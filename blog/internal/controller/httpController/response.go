@@ -18,7 +18,7 @@ type Response struct {
 func (c *httpController) responseErrorFrom(writer http.ResponseWriter, err error) {
 	c.log.Error("httpController", zap.Error(err))
 
-	var ErrNotFound service.ErrNotFound
+	var ErrNotFound service.ErrNotPostsFound
 	if errors.As(err, &ErrNotFound) {
 		responseError(writer, ErrNotFound.Display(), http.StatusNotFound)
 		return

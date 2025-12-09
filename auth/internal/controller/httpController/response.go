@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/fk4peace/golang_services/auth/internal/service"
+	"go.uber.org/zap"
 )
 
 type Response struct {
@@ -14,8 +15,8 @@ type Response struct {
 	Data  interface{} `json:"data,omitempty"`
 }
 
-func responseErrorFrom(writer http.ResponseWriter, r *http.Request, err error) {
-	writeError(r, err)
+func (c httpController) responseErrorFrom(writer http.ResponseWriter, err error) {
+	c.log.Error("httpController", zap.Error(err))
 
 	var errPasswordTooShort service.ErrPasswordTooShort
 	if errors.As(err, &errPasswordTooShort) {
